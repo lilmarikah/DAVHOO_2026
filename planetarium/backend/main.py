@@ -1,14 +1,3 @@
-"""
-🔭 Planetárium API - Csillagászati Backend (Skyfield verzió)
-============================================================
-FastAPI backend pontos csillagászati számításokhoz
-NASA JPL DE432s ephemeris adatokkal
-+ SQLite adatbázis a csillagkatalógusokhoz
-
-Készítette: Mariotti Lili
-Verzió: 2.1 (Skyfield + SQLite)
-"""
-
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -428,7 +417,7 @@ def get_sun_info(t, observer, latitude: float, longitude: float, elevation: floa
 
 @app.get("/", tags=["Info"])
 async def root():
-    """API információ és állapot"""
+
     return {
         "name": "🔭 Planetárium API",
         "version": "2.1.0",
@@ -463,7 +452,7 @@ async def get_all_planets(
     longitude: Optional[float] = Query(None, ge=-180, le=180),
     elevation: float = Query(0)
 ):
-    """Összes bolygó aktuális pozíciója"""
+
     if not EPHEMERIS_LOADED:
         raise HTTPException(500, "Ephemeris file not loaded")
     
@@ -489,7 +478,7 @@ async def get_planet(
     longitude: Optional[float] = Query(None, ge=-180, le=180),
     elevation: float = Query(0)
 ):
-    """Egy bolygó részletes pozíciója"""
+
     if not EPHEMERIS_LOADED:
         raise HTTPException(500, "Ephemeris file not loaded")
     
@@ -514,7 +503,7 @@ async def get_moon_endpoint(
     longitude: Optional[float] = Query(None, ge=-180, le=180),
     elevation: float = Query(0)
 ):
-    """Hold pozíció és részletes fázisinformációk"""
+
     if not EPHEMERIS_LOADED:
         raise HTTPException(500, "Ephemeris file not loaded")
     
@@ -534,7 +523,7 @@ async def get_sun_endpoint(
     longitude: float = Query(..., ge=-180, le=180),
     elevation: float = Query(0)
 ):
-    """Nap pozíció és napkelte/napnyugta időpontok"""
+
     if not EPHEMERIS_LOADED:
         raise HTTPException(500, "Ephemeris file not loaded")
     
@@ -550,7 +539,7 @@ async def get_sidereal_time(
     datetime_utc: Optional[str] = Query(None),
     longitude: float = Query(..., ge=-180, le=180)
 ):
-    """Greenwich-i és helyi csillagidő számítása"""
+
     dt = parse_datetime(datetime_utc)
     t = datetime_to_skyfield(dt)
     
@@ -572,7 +561,7 @@ async def get_sidereal_time(
 
 @app.get("/health", tags=["Rendszer"])
 async def health_check():
-    """API állapot és rendszerinformáció"""
+
     return {
         "status": "healthy" if EPHEMERIS_LOADED else "degraded",
         "timestamp": datetime.utcnow().isoformat(),
@@ -599,7 +588,7 @@ if NASA_API_AVAILABLE:
         start_date: Optional[str] = Query(None),
         end_date: Optional[str] = Query(None)
     ):
-        """🖼️ Astronomy Picture of the Day"""
+
         try:
             results = await nasa_client.get_apod(date, count, start_date, end_date)
             return [r.model_dump() for r in results]
@@ -611,7 +600,7 @@ if NASA_API_AVAILABLE:
         start_date: Optional[str] = Query(None),
         end_date: Optional[str] = Query(None)
     ):
-        """☄️ Near Earth Objects"""
+
         try:
             result = await nasa_client.get_neo_feed(start_date, end_date)
             response = result.model_dump()
@@ -632,7 +621,7 @@ if NASA_API_AVAILABLE:
         camera: Optional[str] = Query(None),
         page: int = Query(1, ge=1)
     ):
-        """🔴 Mars Rover Fotók"""
+
         try:
             results = await nasa_client.get_mars_photos(rover, sol, earth_date, camera, page)
             return [r.model_dump() for r in results]
@@ -642,7 +631,7 @@ if NASA_API_AVAILABLE:
 
     @app.get("/nasa/mars/manifest/{rover}", tags=["NASA API"])
     async def get_mars_manifest(rover: str = "curiosity"):
-        """🔴 Mars Rover Manifest"""
+
         try:
             result = await nasa_client.get_mars_rover_manifest(rover)
             return result
@@ -655,7 +644,6 @@ if NASA_API_AVAILABLE:
         collection: str = Query("natural"),
         date: Optional[str] = Query(None)
     ):
-        """🌍 EPIC Earth Images"""
         try:
             results = await nasa_client.get_epic_images(collection, date)
             return [r.model_dump() for r in results]

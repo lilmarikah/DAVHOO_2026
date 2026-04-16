@@ -1,18 +1,3 @@
-"""
-🚀 NASA API Integráció
-======================
-NASA nyílt API-k integrációja a Planetárium projekthez
-
-API-k:
-- APOD (Astronomy Picture of the Day)
-- NEO (Near Earth Objects) - Aszteroidák
-- EPIC (Earth Polychromatic Imaging Camera)
-- Mars Rover Photos
-- DONKI (Space Weather)
-
-Készítette: Mariotti Lili
-"""
-
 import httpx
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
@@ -29,7 +14,7 @@ NASA_EPIC_IMAGE_BASE = "https://epic.gsfc.nasa.gov/archive"
 CACHE_TIMEOUT = 3600  # 1 óra
 
 class APODResponse(BaseModel):
-    """Astronomy Picture of the Day"""
+
     date: str = Field(..., description="Kép dátuma (YYYY-MM-DD)")
     title: str = Field(..., description="Kép címe")
     explanation: str = Field(..., description="Leírás/magyarázat")
@@ -40,7 +25,7 @@ class APODResponse(BaseModel):
     thumbnail_url: Optional[str] = Field(None, description="Thumbnail URL (videóknál)")
 
 class NearEarthObject(BaseModel):
-    """Közel-Föld objektum (aszteroida)"""
+
     id: str = Field(..., description="NASA JPL ID")
     name: str = Field(..., description="Aszteroida neve")
     nasa_jpl_url: str = Field(..., description="JPL adatlap URL")
@@ -60,7 +45,7 @@ class NearEarthObject(BaseModel):
     orbiting_body: str = Field(..., description="Keringési központ")
 
 class NEOFeedResponse(BaseModel):
-    """NEO Feed válasz"""
+
     element_count: int = Field(..., description="Objektumok száma")
     start_date: str
     end_date: str
@@ -68,7 +53,7 @@ class NEOFeedResponse(BaseModel):
     potentially_hazardous_count: int = Field(..., description="Veszélyes objektumok száma")
 
 class EPICImage(BaseModel):
-    """EPIC (Föld kép) adat"""
+
     identifier: str = Field(..., description="Kép azonosító")
     date: str = Field(..., description="Készítés dátuma")
     caption: str = Field(..., description="Képaláírás")
@@ -80,7 +65,7 @@ class EPICImage(BaseModel):
     attitude_quaternions: Dict[str, float] = Field(..., description="Műhold orientáció")
 
 class MarsRoverPhoto(BaseModel):
-    """Mars rover fotó"""
+
     id: int = Field(..., description="Fotó ID")
     sol: int = Field(..., description="Mars nap (sol)")
     earth_date: str = Field(..., description="Földi dátum")
@@ -91,7 +76,6 @@ class MarsRoverPhoto(BaseModel):
     rover_status: str = Field(..., description="Rover státusz")
 
 class NASAClient:
-    """NASA API kliens aszinkron lekérdezésekhez"""
     
     def __init__(self, api_key: str = NASA_API_KEY):
         self.api_key = api_key
@@ -99,7 +83,7 @@ class NASAClient:
         self._cache: Dict[str, tuple] = {}  # Simple in-memory cache
     
     def _get_cache(self, key: str) -> Optional[Any]:
-        """Get cached value if not expired"""
+
         if key in self._cache:
             data, timestamp = self._cache[key]
             if datetime.now().timestamp() - timestamp < CACHE_TIMEOUT:
@@ -108,11 +92,11 @@ class NASAClient:
         return None
     
     def _set_cache(self, key: str, data: Any):
-        """Set cache value"""
+
         self._cache[key] = (data, datetime.now().timestamp())
     
     async def _request(self, endpoint: str, params: dict = None) -> dict:
-        """Make async request to NASA API"""
+
         if params is None:
             params = {}
         params["api_key"] = self.api_key
@@ -127,16 +111,7 @@ class NASAClient:
     async def get_apod(self, date: str = None, count: int = None, 
                        start_date: str = None, end_date: str = None,
                        thumbs: bool = True) -> List[APODResponse]:
-        """
-        Astronomy Picture of the Day lekérdezése
-        
-        Args:
-            date: Konkrét dátum (YYYY-MM-DD)
-            count: Véletlenszerű képek száma
-            start_date: Időszak kezdete
-            end_date: Időszak vége
-            thumbs: Thumbnail URL-ek videóknál
-        """
+
         cache_key = f"apod_{date}_{count}_{start_date}_{end_date}"
         cached = self._get_cache(cache_key)
         if cached:
@@ -175,13 +150,7 @@ class NASAClient:
     
     async def get_neo_feed(self, start_date: str = None, 
                            end_date: str = None) -> NEOFeedResponse:
-        """
-        Közel-Föld objektumok (aszteroidák) lekérdezése
-        
-        Args:
-            start_date: Kezdő dátum (YYYY-MM-DD), default: ma
-            end_date: Záró dátum (max 7 nap különbség)
-        """
+ 
         if not start_date:
             start_date = datetime.now().strftime("%Y-%m-%d")
         if not end_date:
@@ -250,9 +219,7 @@ class NASAClient:
         return result
     
     async def get_neo_lookup(self, asteroid_id: str) -> NearEarthObject:
-        """
-        Konkrét aszteroida lekérdezése ID alapján
-        """
+
         cache_key = f"neo_lookup_{asteroid_id}"
         cached = self._get_cache(cache_key)
         if cached:
@@ -298,7 +265,7 @@ class NASAClient:
         return result
     
     async def _epic_request(self, endpoint: str) -> list:
-        """Közvetlen kérés az epic.gsfc.nasa.gov-hoz (nem kell API key!)"""
+
         url = f"{NASA_EPIC_API_BASE}{endpoint}"
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.get(url)
@@ -307,10 +274,7 @@ class NASAClient:
     
     async def get_epic_images(self, collection: str = "natural", 
                               date: str = None) -> List[EPICImage]:
-        """
-        EPIC képek - közvetlenül az epic.gsfc.nasa.gov-ról
-        (az api.nasa.gov mirror 503-at ad, ez mindig működik)
-        """
+
         cache_key = f"epic_{collection}_{date}"
         cached = self._get_cache(cache_key)
         if cached:
@@ -374,16 +338,7 @@ class NASAClient:
     async def get_mars_photos(self, rover: str = "curiosity", 
                               sol: int = None, earth_date: str = None,
                               camera: str = None, page: int = 1) -> List[MarsRoverPhoto]:
-        """
-        Mars rover fotók lekérdezése
-        
-        Args:
-            rover: "curiosity", "opportunity", "spirit", "perseverance"
-            sol: Mars nap (Sol)
-            earth_date: Földi dátum (YYYY-MM-DD)
-            camera: Kamera kód (FHAZ, RHAZ, MAST, CHEMCAM, MAHLI, MARDI, NAVCAM, PANCAM, MINITES)
-            page: Oldal szám (25 kép/oldal)
-        """
+
         cache_key = f"mars_{rover}_{sol}_{earth_date}_{camera}_{page}"
         cached = self._get_cache(cache_key)
         if cached:
@@ -423,7 +378,6 @@ class NASAClient:
         return results
     
     async def _get_mars_latest(self, rover: str, camera: str = None) -> List[MarsRoverPhoto]:
-        """Legfrissebb fotók lekérdezése a latest_photos endpointtal"""
         params = {}
         if camera:
             params["camera"] = camera
@@ -432,7 +386,6 @@ class NASAClient:
         return self._parse_mars_photos(data, key="latest_photos")
     
     def _parse_mars_photos(self, data: dict, key: str = "photos") -> List[MarsRoverPhoto]:
-        """Mars fotó válasz feldolgozása"""
         results = []
         for photo in data.get(key, []):
             camera_data = photo.get("camera", {})
@@ -451,7 +404,6 @@ class NASAClient:
         return results
     
     async def get_mars_rover_manifest(self, rover: str = "curiosity") -> dict:
-        """Mars rover misszió adatok"""
         cache_key = f"mars_manifest_{rover}"
         cached = self._get_cache(cache_key)
         if cached:
@@ -505,7 +457,6 @@ class NASAClient:
 nasa_client = NASAClient()
 
 def format_distance_readable(km: float) -> str:
-    """Format distance in human readable form"""
     if km >= 1_000_000:
         return f"{km / 1_000_000:.2f} millió km"
     elif km >= 1000:
@@ -514,14 +465,12 @@ def format_distance_readable(km: float) -> str:
         return f"{km:.0f} km"
 
 def format_velocity_readable(kmh: float) -> str:
-    """Format velocity in human readable form"""
     if kmh >= 100_000:
         return f"{kmh / 1000:.0f} km/s"
     else:
         return f"{kmh:.0f} km/h"
 
 def get_hazard_level(is_hazardous: bool, miss_distance_lunar: float) -> dict:
-    """Get hazard level description"""
     if is_hazardous and miss_distance_lunar < 10:
         return {
             "level": "high",

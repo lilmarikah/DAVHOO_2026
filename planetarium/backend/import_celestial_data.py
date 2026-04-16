@@ -1,19 +1,3 @@
-"""
-🔭 CelestialData.js → planetarium.db Importáló
-================================================
-Ez a script a frontend celestialData.js fájl ÖSSZES adatát
-importálja egyetlen SQLite adatbázisba.
-
-Használat:
-  cd C:\\SZAKDOGA3.0\\planetarium\\backend
-  python import_celestial_data.py
-
-Vagy megadott útvonallal:
-  python import_celestial_data.py --js ../frontend/src/celestialData.js --db database/planetarium.db
-
-Készítette: Mariotti Lili
-"""
-
 import sqlite3
 import re
 import json
@@ -21,7 +5,7 @@ import os
 import argparse
 
 def parse_js_array(content, var_name):
-    """JavaScript tömb kinyerése export const ... = [...] formátumból"""
+
     pattern = rf'export\s+const\s+{var_name}\s*=\s*\['
     match = re.search(pattern, content)
     if not match:
@@ -54,7 +38,7 @@ def parse_js_array(content, var_name):
 
 
 def parse_js_object(content, var_name):
-    """JavaScript objektum kinyerése export const ... = {...} formátumból"""
+
     pattern = rf'export\s+const\s+{var_name}\s*=\s*\{{'
     match = re.search(pattern, content)
     if not match:
@@ -85,7 +69,7 @@ def parse_js_object(content, var_name):
         return {}
 
 def parse_js_array_line_by_line(content, var_name):
-    """Tartalék parser: soronként regex-szel"""
+
     results = []
     
     if var_name == 'brightStars':
@@ -111,7 +95,7 @@ def parse_js_array_line_by_line(content, var_name):
 
 
 def parse_galaxies(content):
-    """Galaxisok kinyerése robusztus regex-szel"""
+
     results = []
     start_match = re.search(r'export\s+const\s+galaxies\s*=\s*\[', content)
     if not start_match:
@@ -188,11 +172,11 @@ def parse_galaxies(content):
     return results
 
 def parse_nebulae(content):
-    """Ködök kinyerése — ezek JSON formátumúak"""
+
     return parse_nebulae_style(content, 'nebulaeData', 'köd')
 
 def parse_nebulae_style(content, var_name, label):
-    """JSON-formátumú tömb kinyerése (dupla idézőjeles kulcsok)"""
+
     results = []
     start_match = re.search(rf'export\s+const\s+{var_name}\s*=\s*\[', content)
     if not start_match:
@@ -251,7 +235,7 @@ def parse_nebulae_style(content, var_name, label):
     return results
 
 def create_tables(cursor):
-    """Összes tábla létrehozása (DROP + CREATE)"""
+
     
     cursor.executescript("""
         -- Régi táblák törlése
@@ -386,7 +370,7 @@ def create_tables(cursor):
     print("✅ Táblák létrehozva")
 
 def import_stars(cursor, stars):
-    """Csillagok importálása"""
+
     for s in stars:
         cursor.execute("""
             INSERT OR REPLACE INTO stars (id, name, bayer, ra, dec, mag, color, constellation, constellation_hu)
@@ -399,7 +383,7 @@ def import_stars(cursor, stars):
     print(f"  ⭐ {len(stars)} csillag importálva")
 
 def import_constellations(cursor, constellations):
-    """Csillagképek importálása"""
+
     for c in constellations:
         lines_json = json.dumps(c.get('lines', []))
         label_pos = c.get('labelPos', {})
@@ -414,7 +398,7 @@ def import_constellations(cursor, constellations):
     print(f"  ✨ {len(constellations)} csillagkép importálva")
 
 def import_solar_system(cursor, sun, planets_list, moon):
-    """Naprendszer importálása"""
+
     count = 0
     
     if sun:
@@ -457,7 +441,7 @@ def import_solar_system(cursor, sun, planets_list, moon):
     print(f"  🪐 {count} naprendszer objektum importálva")
 
 def import_galaxies(cursor, galaxies):
-    """Galaxisok importálása"""
+
     for g in galaxies:
         color_scheme = json.dumps(g.get('colorScheme')) if g.get('colorScheme') else None
         special = json.dumps(g.get('specialFeatures') or g.get('special_features')) if (g.get('specialFeatures') or g.get('special_features')) else None
@@ -486,7 +470,7 @@ def import_galaxies(cursor, galaxies):
     print(f"  🌌 {len(galaxies)} galaxis importálva")
 
 def import_nebulae(cursor, nebulae):
-    """Ködök importálása"""
+
     for n in nebulae:
         cursor.execute("""
             INSERT OR REPLACE INTO nebulae 
@@ -506,7 +490,7 @@ def import_nebulae(cursor, nebulae):
     print(f"  🌫️ {len(nebulae)} köd importálva")
 
 def import_exoplanets(cursor, exoplanets):
-    """Exobolygók importálása"""
+
     for e in exoplanets:
         cursor.execute("""
             INSERT OR REPLACE INTO exoplanets 
@@ -527,7 +511,7 @@ def import_exoplanets(cursor, exoplanets):
     print(f"  🌍 {len(exoplanets)} exobolygó importálva")
 
 def import_deep_sky(cursor, objects):
-    """Deep-sky objektumok importálása"""
+
     for o in objects:
         cursor.execute("""
             INSERT OR REPLACE INTO deep_sky_objects 

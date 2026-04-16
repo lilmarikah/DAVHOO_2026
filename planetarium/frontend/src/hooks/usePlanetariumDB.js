@@ -1,17 +1,7 @@
-/**
- * 🌟 Planetárium Database Hook
- * ============================
- * React hook az SQLite adatbázis API-hoz
- */
-
 import { useState, useEffect, useCallback } from 'react';
 
-// API base URL - fejlesztéskor localhost, production-ben a deployed URL
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-/**
- * Általános API hívás
- */
 async function fetchAPI(endpoint, options = {}) {
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
@@ -28,9 +18,6 @@ async function fetchAPI(endpoint, options = {}) {
   return response.json();
 }
 
-// ============================================
-// CSILLAGOK HOOK
-// ============================================
 
 export function useStars(options = {}) {
   const [stars, setStars] = useState([]);
@@ -65,9 +52,6 @@ export function useStars(options = {}) {
   return { stars, loading, error };
 }
 
-// ============================================
-// BOLYGÓK HOOK
-// ============================================
 
 export function usePlanets() {
   const [planets, setPlanets] = useState([]);
@@ -94,9 +78,6 @@ export function usePlanets() {
   return { planets, loading, error };
 }
 
-// ============================================
-// BOLYGÓ POZÍCIÓK HOOK (valós idejű)
-// ============================================
 
 export function usePlanetPositions(date = null) {
   const [positions, setPositions] = useState({});
@@ -124,9 +105,6 @@ export function usePlanetPositions(date = null) {
   return { positions, loading, error };
 }
 
-// ============================================
-// GALAXISOK HOOK
-// ============================================
 
 export function useGalaxies(options = {}) {
   const [galaxies, setGalaxies] = useState([]);
@@ -161,9 +139,6 @@ export function useGalaxies(options = {}) {
   return { galaxies, loading, error };
 }
 
-// ============================================
-// DEEP SKY OBJEKTUMOK HOOK
-// ============================================
 
 export function useDeepSkyObjects(options = {}) {
   const [dsos, setDsos] = useState([]);
@@ -198,9 +173,6 @@ export function useDeepSkyObjects(options = {}) {
   return { dsos, loading, error };
 }
 
-// ============================================
-// CSILLAGKÉPEK HOOK
-// ============================================
 
 export function useConstellations() {
   const [constellations, setConstellations] = useState([]);
@@ -227,9 +199,6 @@ export function useConstellations() {
   return { constellations, loading, error };
 }
 
-// ============================================
-// HOLD ADATOK HOOK
-// ============================================
 
 export function useMoon(date = null) {
   const [moon, setMoon] = useState(null);
@@ -257,9 +226,6 @@ export function useMoon(date = null) {
   return { moon, loading, error };
 }
 
-// ============================================
-// NAP ADATOK HOOK
-// ============================================
 
 export function useSun(date = null) {
   const [sun, setSun] = useState(null);
@@ -287,9 +253,6 @@ export function useSun(date = null) {
   return { sun, loading, error };
 }
 
-// ============================================
-// KERESÉS HOOK
-// ============================================
 
 export function useSearch(query) {
   const [results, setResults] = useState([]);
@@ -323,9 +286,6 @@ export function useSearch(query) {
   return { results, loading, error };
 }
 
-// ============================================
-// ADATBÁZIS STATISZTIKA HOOK
-// ============================================
 
 export function useDatabaseStats() {
   const [stats, setStats] = useState(null);
@@ -352,9 +312,6 @@ export function useDatabaseStats() {
   return { stats, loading, error };
 }
 
-// ============================================
-// ÖSSZES ADAT BETÖLTÉSE (inicializáláshoz)
-// ============================================
 
 export function useCelestialData() {
   const { stars, loading: starsLoading } = useStars({ maxMag: 4.5 });
