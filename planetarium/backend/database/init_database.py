@@ -1,8 +1,3 @@
-"""
-🌟 Planetárium Adatbázis Inicializáló
-=====================================
-SQLite adatbázis a csillagászati objektumokhoz
-"""
 import sqlite3
 import json
 import os
@@ -10,7 +5,7 @@ import os
 DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'planetarium.db')
 
 def create_database():
-    """Adatbázis és táblák létrehozása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -160,7 +155,7 @@ def create_database():
     print(f"✅ Adatbázis létrehozva: {DATABASE_PATH}")
 
 def insert_stars(stars_data):
-    """Csillagok beszúrása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -176,7 +171,7 @@ def insert_stars(stars_data):
     print(f"✅ {len(stars_data)} csillag beszúrva")
 
 def insert_planets(planets_data):
-    """Bolygók beszúrása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -196,7 +191,7 @@ def insert_planets(planets_data):
     print(f"✅ {len(planets_data)} bolygó beszúrva")
 
 def insert_galaxies(galaxies_data):
-    """Galaxisok beszúrása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -217,7 +212,7 @@ def insert_galaxies(galaxies_data):
     print(f"✅ {len(galaxies_data)} galaxis beszúrva")
 
 def insert_deep_sky_objects(dso_data):
-    """Ködök és halmazok beszúrása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -238,7 +233,7 @@ def insert_deep_sky_objects(dso_data):
     print(f"✅ {len(dso_data)} deep sky objektum beszúrva")
 
 def insert_constellations(const_data):
-    """Csillagképek beszúrása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -257,7 +252,7 @@ def insert_constellations(const_data):
     print(f"✅ {len(const_data)} csillagkép beszúrva")
 
 def insert_sun_data():
-    """Nap adatok beszúrása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
@@ -275,7 +270,7 @@ def insert_sun_data():
     print("✅ Nap adatok beszúrva")
 
 def insert_moon_data():
-    """Hold adatok beszúrása"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     

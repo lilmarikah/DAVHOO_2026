@@ -1,9 +1,3 @@
-"""
-🌟 Csillagkatalógus Importáló
-=============================
-Beolvassa a celestialData.js adatait és SQLite-ba tölti
-"""
-
 import sqlite3
 import json
 import re
@@ -16,7 +10,6 @@ from init_database import (
 )
 
 def parse_js_array(js_content, array_name):
-    """JavaScript tömb kinyerése és Python listává alakítása"""
 
     pattern = rf'export\s+const\s+{array_name}\s*=\s*\[(.*?)\];'
     match = re.search(pattern, js_content, re.DOTALL)
@@ -41,7 +34,7 @@ def parse_js_array(js_content, array_name):
         return parse_js_objects_manually(array_content)
 
 def parse_js_objects_manually(content):
-    """Manuális objektum parsing ha a JSON nem működik"""
+
     objects = []
     depth = 0
     start = -1
@@ -67,7 +60,7 @@ def parse_js_objects_manually(content):
     return objects
 
 def import_from_celestial_data(js_file_path):
-    """Fő importáló függvény"""
+
     print(f"\n📖 Beolvasás: {js_file_path}")
     
     with open(js_file_path, 'r', encoding='utf-8') as f:
@@ -103,7 +96,7 @@ def import_from_celestial_data(js_file_path):
     show_statistics()
 
 def show_statistics():
-    """Adatbázis statisztika megjelenítése"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     

@@ -1,35 +1,3 @@
-"""
-🌟 Hipparcos Csillagkatalógus Importáló
-========================================
-Letölti és importálja a Hipparcos katalógust az SQLite adatbázisba.
-
-Használat:
-  1. Töltsd le a katalógust (lásd lent)
-  2. Futtasd: python import_hipparcos.py
-
-Forrás: Vizier / CDS Strasbourg
-  A Hipparcos katalógus ~118,000 csillagot tartalmaz mag ~12-ig.
-  
-  LETÖLTÉSI LEHETŐSÉGEK:
-  =====================
-  
-  ★ AJÁNLOTT (legegyszerűbb): Yale Bright Star Catalog + Hipparcos kombi
-    https://github.com/astronexus/HYG-Database/blob/master/hyg/v4/hyg_v40.csv
-    → Ez a HYG v4 adatbázis, ~120,000 csillag, nevekkel, Bayer/Flamsteed jelölésekkel
-    → Mentsd el mint: hyg_v40.csv a backend/database/ mappába
-  
-  ★ ALTERNATÍVA: Csak a fényes csillagok (BSC5 - Yale Bright Star Catalog)
-    https://github.com/astronexus/HYG-Database/blob/master/hyg/v4/hyg_v40.csv
-    → Szűrd mag < 6.5-re
-
-  ★ ALTERNATÍVA 2: Eredeti Hipparcos
-    https://cdsarc.cds.unistra.fr/viz-bin/cat/I/239
-    → Bonyolultabb formátum, az alábbi szkript a HYG CSV-t használja
-
-Készítette: Mariotti Lili
-Témavezető: Kovács Ádám
-"""
-
 import sqlite3
 import csv
 import os
@@ -76,15 +44,7 @@ def spectral_to_color(sp):
         return '#ffffff'
 
 def import_hyg_catalog(csv_path, mag_limit=7.0):
-    """
-    HYG v4 CSV importálása
-    
-    CSV oszlopok (HYG v4):
-      id, hip, hd, hr, gl, bf, proper, ra, dec, dist, pmra, pmdec,
-      rv, mag, absmag, spect, ci, x, y, z, vx, vy, vz,
-      rarad, decrad, pmrarad, pmdecrad, bayer, flam, con, comp, comp_primary,
-      base, lum, var, var_min, var_max
-    """
+
     if not os.path.exists(csv_path):
         print(f"❌ Fájl nem található: {csv_path}")
         print()

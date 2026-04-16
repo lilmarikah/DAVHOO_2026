@@ -1,9 +1,3 @@
-"""
-Planetárium Adatbázis Tesztek
-==============================
-Futtatás: pytest test_database.py -v
-"""
-
 import pytest
 import sqlite3
 import os
@@ -14,7 +8,7 @@ DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'planetarium.db')
 
 @pytest.fixture
 def db():
-    """Adatbázis kapcsolat fixture"""
+
     assert os.path.exists(DATABASE_PATH), f"Adatbázis nem található: {DATABASE_PATH}"
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
@@ -22,7 +16,7 @@ def db():
     conn.close()
 
 class TestTableStructure:
-    """Elvárt táblák és oszlopok ellenőrzése"""
+
 
     EXPECTED_TABLES = [
         'stars', 'galaxies', 'nebulae', 'solar_system',
@@ -168,7 +162,6 @@ class TestSolarSystem:
             assert row is not None, f"Hiányzó bolygó: {name}"
 
     def test_distance_order(self, db):
-        """Bolygók távolság szerinti sorrendben"""
         rows = db.execute(
             "SELECT id, distance FROM solar_system WHERE type = 'planet' ORDER BY distance"
         ).fetchall()

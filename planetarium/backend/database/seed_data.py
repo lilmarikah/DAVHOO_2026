@@ -1,17 +1,3 @@
-"""
-🌟 Planetárium Adatbázis - Teljes Seed Script
-===============================================
-Létrehozza és feltölti az összes táblát:
-- stars (meglévő 717 csillag megmarad)
-- galaxies (bővített - Messier + Caldwell + további)
-- nebulae (ködök - külön tábla)
-- solar_system (bolygók + Nap + Hold egyben)
-- exoplanets (ismert exobolygók)
-- constellations (meglévő megmarad)
-
-Készítette: Mariotti Lili
-"""
-
 import sqlite3
 import json
 import os
@@ -21,13 +7,13 @@ DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'planetarium.db')
 SOURCE_DB = '/mnt/user-data/uploads/planetarium.db' if os.path.exists('/mnt/user-data/uploads/planetarium.db') else None
 
 def backup_and_copy():
-    """Eredeti adatbázis másolása"""
+
     if SOURCE_DB and not os.path.exists(DATABASE_PATH):
         shutil.copy2(SOURCE_DB, DATABASE_PATH)
         print(f"✅ Adatbázis másolva: {SOURCE_DB} -> {DATABASE_PATH}")
 
 def create_new_tables():
-    """Új táblák létrehozása + régi tábla átszervezés"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -148,7 +134,7 @@ def create_new_tables():
 
 
 def seed_galaxies():
-    """Galaxisok - teljes Messier + Caldwell + további"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -227,7 +213,7 @@ def seed_galaxies():
 
 
 def seed_nebulae():
-    """Ködök - Messier + Caldwell + további"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -281,7 +267,7 @@ def seed_nebulae():
     print(f"✅ {count} köd beszúrva")
 
 def seed_solar_system():
-    """Naprendszer - Nap + Bolygók + Hold egyben"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -318,7 +304,7 @@ def seed_solar_system():
 
 
 def seed_exoplanets():
-    """Ismert exobolygók"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -363,7 +349,7 @@ def seed_exoplanets():
 
 
 def cleanup_old_tables():
-    """Régi, felesleges táblák törlése"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
@@ -380,7 +366,7 @@ def cleanup_old_tables():
     conn.close()
 
 def show_statistics():
-    """Végső statisztika"""
+
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
 
