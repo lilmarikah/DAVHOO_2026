@@ -414,25 +414,25 @@ export function NASASpaceGallery({ expanded = false, onToggle }) {
   }, [topic]);
 
   return (
-    <div className={`nasa-widget mars-widget ${expanded ? 'expanded' : ''}`}>
+    <div className={`nasa-widget gallery-widget ${expanded ? 'expanded' : ''}`}>
       <div className="widget-header" onClick={onToggle}>
         <span className="widget-icon">🔭</span>
         <span className="widget-title">NASA Űrgaléria</span>
-        <span className="widget-rover">{topics.find(t => t.id === topic)?.name}</span>
+        <span className="widget-topic">{topics.find(t => t.id === topic)?.name}</span>
         <span className="expand-icon">{expanded ? '▼' : '▶'}</span>
       </div>
       
       <div className="widget-content">
         {/* Topic selector */}
-        <div className="rover-selector">
+        <div className="topic-selector">
           {topics.map(t => (
             <button
               key={t.id}
-              className={`rover-btn ${topic === t.id ? 'active' : ''}`}
+              className={`topic-btn ${topic === t.id ? 'active' : ''}`}
               onClick={() => setTopic(t.id)}
             >
-              <span className="rover-emoji">{t.emoji}</span>
-              <span className="rover-name">{t.name}</span>
+              <span className="topic-emoji">{t.emoji}</span>
+              <span className="topic-name">{t.name}</span>
             </button>
           ))}
         </div>
@@ -695,8 +695,8 @@ export default function NASADashboard({ isOpen, onClose }) {
           />
           
           <NASASpaceGallery 
-            expanded={expandedWidget === 'mars'} 
-            onToggle={() => toggleWidget('mars')} 
+            expanded={expandedWidget === 'gallery'} 
+            onToggle={() => toggleWidget('gallery')} 
           />
           
           <EarthViewer 

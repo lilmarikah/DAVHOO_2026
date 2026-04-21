@@ -1,14 +1,3 @@
-"""
-🌟 Planetárium Database API
-============================
-FastAPI endpoints az SQLite adatbázishoz.
-Minden csillagászati adat egyetlen adatbázisból.
-
-Használat main.py-ban:
-  from database.database_api import router as db_router
-  app.include_router(db_router)
-"""
-
 from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 import sqlite3
@@ -20,7 +9,7 @@ router = APIRouter(prefix="/api/db", tags=["database"])
 DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'planetarium.db')
 
 def get_db():
-    """Adatbázis kapcsolat"""
+
     if not os.path.exists(DATABASE_PATH):
         raise HTTPException(status_code=500, detail=f"Adatbázis nem található: {DATABASE_PATH}")
     conn = sqlite3.connect(DATABASE_PATH)
@@ -28,15 +17,12 @@ def get_db():
     return conn
 
 def rows_to_list(rows):
-    """SQLite Rows → list of dicts"""
+
     return [dict(row) for row in rows]
 
 @router.get("/all")
 async def get_all_data():
-    """
-    Minden csillagászati adat egyetlen hívással.
-    A frontend indulásakor ezt hívja meg.
-    """
+
     conn = get_db()
     cursor = conn.cursor()
     
@@ -175,7 +161,7 @@ async def get_stars(
     limit: int = Query(2000, le=20000),
     offset: int = 0
 ):
-    """Csillagok lekérdezése szűrőkkel"""
+
     conn = get_db()
     cursor = conn.cursor()
     
@@ -199,7 +185,7 @@ async def get_stars(
 
 @router.get("/constellations")
 async def get_constellations():
-    """Összes csillagkép vonalakkal"""
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM constellations ORDER BY name")
@@ -215,7 +201,7 @@ async def get_constellations():
 
 @router.get("/solar-system")
 async def get_solar_system():
-    """Naprendszer objektumok"""
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM solar_system")
@@ -225,7 +211,7 @@ async def get_solar_system():
 
 @router.get("/galaxies")
 async def get_galaxies():
-    """Összes galaxis"""
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM galaxies ORDER BY magnitude ASC")
@@ -241,7 +227,7 @@ async def get_galaxies():
 
 @router.get("/nebulae")
 async def get_nebulae():
-    """Összes köd"""
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM nebulae ORDER BY magnitude ASC")
@@ -251,7 +237,7 @@ async def get_nebulae():
 
 @router.get("/exoplanets")
 async def get_exoplanets():
-    """Összes exobolygó"""
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM exoplanets ORDER BY distance_ly ASC")
@@ -261,7 +247,7 @@ async def get_exoplanets():
 
 @router.get("/search")
 async def search(q: str = Query(..., min_length=1)):
-    """Keresés az összes táblában"""
+
     conn = get_db()
     cursor = conn.cursor()
     results = []
@@ -292,7 +278,7 @@ async def search(q: str = Query(..., min_length=1)):
 
 @router.get("/stats")
 async def get_stats():
-    """Adatbázis statisztika"""
+
     conn = get_db()
     cursor = conn.cursor()
     

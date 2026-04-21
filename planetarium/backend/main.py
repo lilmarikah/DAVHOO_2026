@@ -12,25 +12,51 @@ from skyfield import almanac
 from skyfield.framelib import ecliptic_frame
 
 app = FastAPI(
-    title="🔭 Planetárium API",
+    title="Planetárium 3D API",
     description="""
-    Csillagászati számításokat végző REST API a Planetárium webalkalmazáshoz.
-    
-    ## 🚀 NASA JPL DE432s Ephemeris
-    Ez az API a NASA Jet Propulsion Laboratory DE432s ephemeris adatait használja,
-    amely sub-arcsecond pontosságú pozíciószámítást biztosít.
-    
-    ## 🗄️ SQLite Adatbázis
-    Csillagok, galaxisok, ködök és csillagképek adatai.
-    
-    ## Funkciók
-    - **Bolygók pozíciója** - Pontos RA/Dec és Alt/Az koordináták
-    - **Hold pozíció és fázis** - Részletes holdinformációk
-    - **Nap pozíció** - Napkelte, napnyugta időpontok
-    - **Csillagkatalógus** - 717 csillag az adatbázisból
-    - **Galaxisok és ködök** - Deep sky objektumok
-    
-    Készítette: Mariotti Lili - Szakdolgozat
+## Áttekintés
+
+REST API a Planetárium 3D webalkalmazás csillagászati számításaihoz és adatszolgáltatásához.
+Az API két fő adatforrásra épül: a NASA JPL DE432s ephemeris fájlra a pontos égitestpozíciókhoz,
+valamint egy SQLite adatbázisra a csillagkatalógus és mélységi objektumok adataihoz.
+
+## Csillagászati számítások
+
+A bolygók, a Hold és a Nap pozícióit a **Skyfield** Python könyvtár számítja
+a **NASA JPL DE432s** ephemeris adatbázis alapján, amely sub-arcszekundum pontosságot biztosít.
+
+- `GET /planets` – Mind a 7 bolygó aktuális RA/dec és alt/az koordinátái
+- `GET /planet/{name}` – Egy adott bolygó részletes pozíciója és láthatósága
+- `GET /moon` – Hold pozíció, fázis, megvilágítás, szögátmérő
+- `GET /sun` – Nap pozíció, napkelte és napnyugta időpontjai
+- `GET /sidereal-time` – Helyi sziderikus idő (LST), GMST, julián-dátum
+
+## Csillagászati adatbázis
+
+Az SQLite adatbázis a következő adatokat tartalmazza:
+
+- **15 598 csillag** – HYG/Hipparcos katalógus alapján, spektráltípussal és fényességgel
+- **88 IAU-csillagkép** – összekötővonalakkal JSON formátumban
+- **53 galaxis** – morfológiai típus, távolság, szögméret
+- **28 köd** – emissziós, planetáris, reflexiós és egyéb típusok
+- **21 exobolygó** – NASA Exoplanet Archive alapján
+- **9 Naprendszer-objektum** – Nap, Hold és a 7 bolygó textúra- és pályaadatokkal
+
+Elérési prefix: `/api/db`
+
+## NASA API proxy
+
+A következő NASA Open API végpontokat proxyzza a backend:
+
+- `GET /nasa/apod` – Napi csillagászati kép (Astronomy Picture of the Day)
+- `GET /nasa/neo` – Közel Föld aszteroidák (NeoWs)
+- `GET /nasa/epic` – DSCOVR/EPIC Föld-fotók
+
+## Dokumentáció
+
+- Swagger UI: `/docs`
+- ReDoc: `/redoc`
+- Állapot: `/health`
     """,
     version="2.1.0",
     docs_url="/docs",
@@ -437,8 +463,7 @@ async def root():
             "/sun": "Nap pozíció és napkelte/nyugta",
             "/sidereal-time": "Csillagidő számítás",
             "/api/db/stars": "Csillagok adatbázisból",
-            "/api/db/planets": "Bolygó adatok",
-            "/api/db/galaxies": "Galaxisok",
+                        "/api/db/galaxies": "Galaxisok",
             "/api/db/dso": "Ködök és halmazok",
             "/api/db/search": "Keresés",
             "/api/db/stats": "Adatbázis statisztika"
@@ -573,7 +598,7 @@ async def health_check():
 try:
     from nasa_api import (
         nasa_client, APODResponse, NEOFeedResponse, NearEarthObject,
-        EPICImage, MarsRoverPhoto,
+        EPICImage,
         format_distance_readable, format_velocity_readable, get_hazard_level
     )
     NASA_API_AVAILABLE = True
@@ -612,22 +637,6 @@ if NASA_API_AVAILABLE:
             return response
         except Exception as e:
             raise HTTPException(500, f"NASA API hiba: {str(e)}")
-
-    @app.get("/nasa/mars", tags=["NASA API"])
-    async def get_mars_photos(
-        rover: str = Query("curiosity"),
-        sol: Optional[int] = Query(None),
-        earth_date: Optional[str] = Query(None),
-        camera: Optional[str] = Query(None),
-        page: int = Query(1, ge=1)
-    ):
-
-        try:
-            results = await nasa_client.get_mars_photos(rover, sol, earth_date, camera, page)
-            return [r.model_dump() for r in results]
-        except Exception as e:
-            print(f"⚠️ Mars photos endpoint error: {e}")
-            return []  # Üres lista hiba esetén, ne 500
 
     @app.get("/nasa/mars/manifest/{rover}", tags=["NASA API"])
     async def get_mars_manifest(rover: str = "curiosity"):
