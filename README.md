@@ -191,9 +191,8 @@ Az alkalmazás elérhető: `http://localhost:5173`
 | Végpont | Leírás |
 |---|---|
 | `GET /nasa/apod` | Napi csillagászati kép (Astronomy Picture of the Day) |
-| `GET /nasa/neo` | Közel Föld aszteroidák |
+| `GET /nasa/neo` | Közel Föld aszteroidák (NeoWs) |
 | `GET /nasa/epic` | EPIC Föld-fotók (DSCOVR műhold) |
-| `GET /nasa/mars/manifest/{rover}` | Mars Rover adatok |
 
 ### `main.py`
 
@@ -297,11 +296,12 @@ python import_hipparcos.py       # Hipparcos CSV importálása (hygdata_v41.csv 
 
 ## 🌐 NASA API integráció
 
-A `nasa_api.py` modul három NASA végpontot használ:
+A `nasa_api.py` modul a következő NASA végpontokat használja:
 
 - **APOD** – `https://api.nasa.gov/planetary/apod`
-- **Mars Rover** – `https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/latest_photos`
+- **NeoWs (aszteroidák)** – `https://api.nasa.gov/neo/rest/v1/feed`
 - **EPIC** – `https://epic.gsfc.nasa.gov/api/natural`
+- **NASA Képgaléria** – `https://images-api.nasa.gov/search` *(a dashboard közvetlenül hívja, nem backend proxyn keresztül)*
 
 > Az API kulcsot a `.env` fájlban kell megadni `NASA_API_KEY` névvel (vagy `DEMO_KEY` is működik korlátozott számban).
 
@@ -353,7 +353,7 @@ pytest test_database.py -v
 | `Galaxy3D` | `App.jsx` | GLSL shader-alapú galaxis-megjelenítés |
 | `Nebula3D` | `NebulaComponents.jsx` | Volumetrikus köd shader (5 típus) |
 | `AladinInlineViewer` | `AladinViewer.jsx` | Beágyazott Aladin Lite survey panel |
-| `NASADashboard` | `NASADashboard.jsx` | NASA API kártyák (APOD, Mars, EPIC) |
+| `NASADashboard` | `NASADashboard.jsx` | NASA API kártyák (APOD, Aszteroidák, NASA Képgaléria, EPIC) |
 
 ---
 
