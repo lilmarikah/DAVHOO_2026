@@ -284,7 +284,7 @@ async def root():
             "/sidereal-time": "Csillagidő számítás",
             "/api/db/stars": "Csillagok adatbázisból",
             "/api/db/galaxies": "Galaxisok",
-            "/api/db/dso": "Ködök és halmazok",
+            "/api/db/nebulae": "Ködök és halmazok",
             "/api/db/search": "Keresés",
             "/api/db/stats": "Adatbázis statisztika"
         }
@@ -420,16 +420,6 @@ if NASA_API_AVAILABLE:
         except Exception as e:
             raise HTTPException(500, f"NASA API hiba: {str(e)}")
 
-    @app.get("/nasa/mars/manifest/{rover}", tags=["NASA API"])
-    async def get_mars_manifest(rover: str = "curiosity"):
-
-        try:
-            result = await nasa_client.get_mars_rover_manifest(rover)
-            return result
-        except Exception as e:
-            print(f"⚠️ Mars manifest endpoint error: {e}")
-            return {"name": rover, "status": "unknown", "max_sol": 1000, "total_photos": 0}
-
     @app.get("/nasa/epic", tags=["NASA API"])
     async def get_epic_images(
         collection: str = Query("natural"),
@@ -440,8 +430,7 @@ if NASA_API_AVAILABLE:
             return [r.model_dump() for r in results]
         except Exception as e:
             print(f"⚠️ EPIC endpoint error: {e}")
-            return []  # Üres lista hiba esetén, ne 500
-
+            return []
 
 if __name__ == "__main__":
     import uvicorn
