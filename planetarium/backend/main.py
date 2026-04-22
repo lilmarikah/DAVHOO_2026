@@ -4,12 +4,9 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime, timedelta
 from dateutil import parser as date_parser
-import math
 import os
 
 from skyfield.api import load, Topos, Star
-from skyfield import almanac
-from skyfield.framelib import ecliptic_frame
 
 app = FastAPI(
     title="Planetárium 3D API",
@@ -22,13 +19,11 @@ valamint egy SQLite adatbázisra a csillagkatalógus és mélységi objektumok a
 
 ## Csillagászati számítások
 
-A bolygók, a Hold és a Nap pozícióit a **Skyfield** Python könyvtár számítja
+A bolygók pozícióit a **Skyfield** Python könyvtár számítja
 a **NASA JPL DE432s** ephemeris adatbázis alapján, amely sub-arcszekundum pontosságot biztosít.
 
 - `GET /planets` – Mind a 7 bolygó aktuális RA/dec és alt/az koordinátái
 - `GET /planet/{name}` – Egy adott bolygó részletes pozíciója és láthatósága
-- `GET /moon` – Hold pozíció, fázis, megvilágítás, szögátmérő
-- `GET /sun` – Nap pozíció, napkelte és napnyugta időpontjai
 - `GET /sidereal-time` – Helyi sziderikus idő (LST), GMST, julián-dátum
 
 ## Csillagászati adatbázis
@@ -99,7 +94,6 @@ else:
 if EPHEMERIS_LOADED:
     earth = eph['earth']
     sun = eph['sun']
-    moon = eph['moon']
     mercury = eph['mercury']
     venus = eph['venus']
     mars = eph['mars barycenter']
@@ -148,25 +142,6 @@ class CelestialPosition(BaseModel):
     elongation: Optional[float] = None
     description: Optional[str] = None
 
-class MoonInfo(BaseModel):
-    position: CelestialPosition
-    phase: float
-    phase_name: str
-    phase_emoji: str
-    illumination: float
-    age_days: float
-    distance_km: float
-    distance_earth_radii: float
-    angular_diameter_arcmin: float
-    is_waxing: bool
-
-class SunInfo(BaseModel):
-    position: CelestialPosition
-    sunrise: Optional[str] = None
-    sunset: Optional[str] = None
-    solar_noon: Optional[str] = None
-    day_length: Optional[str] = None
-
 class SiderealTime(BaseModel):
     gmst: float
     gast: float
@@ -196,30 +171,6 @@ def format_hours(hours: float) -> str:
     m = int((hours - h) * 60)
     s = int(((hours - h) * 60 - m) * 60)
     return f"{h:02d}:{m:02d}:{s:02d}"
-
-def format_time_short(hours: float) -> str:
-    hours = hours % 24
-    h = int(hours)
-    m = int((hours - h) * 60)
-    return f"{h:02d}:{m:02d}"
-
-def get_moon_phase_name(phase: float) -> tuple:
-    if phase < 0.025 or phase >= 0.975:
-        return ("Újhold", "🌑")
-    elif phase < 0.225:
-        return ("Növekvő sarló", "🌒")
-    elif phase < 0.275:
-        return ("Első negyed", "🌓")
-    elif phase < 0.475:
-        return ("Növekvő hold", "🌔")
-    elif phase < 0.525:
-        return ("Telihold", "🌕")
-    elif phase < 0.725:
-        return ("Fogyó hold", "🌖")
-    elif phase < 0.775:
-        return ("Utolsó negyed", "🌗")
-    else:
-        return ("Fogyó sarló", "🌘")
 
 def get_constellation(ra_hours: float, dec_deg: float) -> str:
     constellations = [
@@ -312,135 +263,6 @@ def get_planet_position(planet_id: str, t, observer=None):
             description=planet_data['description']
         )
 
-def get_moon_info(t, observer=None) -> MoonInfo:
-    if not EPHEMERIS_LOADED:
-        raise HTTPException(500, "Ephemeris not loaded")
-    
-    if observer:
-        astrometric = observer.at(t).observe(moon)
-        apparent = astrometric.apparent()
-        ra, dec, distance = apparent.radec()
-        alt, az, _ = apparent.altaz()
-        is_visible = alt.degrees > 0
-    else:
-        astrometric = earth.at(t).observe(moon)
-        ra, dec, distance = astrometric.radec()
-        alt, az = None, None
-        is_visible = None
-    
-    sun_pos = earth.at(t).observe(sun)
-    moon_pos = earth.at(t).observe(moon)
-    
-    _, sun_lon, _ = sun_pos.apparent().frame_latlon(ecliptic_frame)
-    _, moon_lon, _ = moon_pos.apparent().frame_latlon(ecliptic_frame)
-    
-    phase_angle = (moon_lon.degrees - sun_lon.degrees) % 360
-    phase = phase_angle / 360
-    illumination = (1 - math.cos(math.radians(phase_angle))) / 2 * 100
-    is_waxing = phase < 0.5
-    age_days = phase * 29.53059
-    
-    distance_km = distance.km
-    earth_radius = 6371
-    distance_earth_radii = distance_km / earth_radius
-    
-    moon_radius_km = 1737.4
-    angular_diameter = 2 * math.degrees(math.atan(moon_radius_km / distance_km)) * 60
-    
-    phase_name, phase_emoji = get_moon_phase_name(phase)
-    
-    position = CelestialPosition(
-        name="Hold",
-        name_en="Moon",
-        ra=ra.hours,
-        dec=dec.degrees,
-        ra_degrees=ra.hours * 15,
-        ra_formatted=format_ra(ra.hours),
-        dec_formatted=format_dec(dec.degrees),
-        alt=alt.degrees if alt else None,
-        az=az.degrees if az else None,
-        distance_au=distance.au,
-        distance_km=distance_km,
-        is_visible=is_visible,
-    )
-    
-    return MoonInfo(
-        position=position,
-        phase=phase,
-        phase_name=phase_name,
-        phase_emoji=phase_emoji,
-        illumination=illumination,
-        age_days=age_days,
-        distance_km=distance_km,
-        distance_earth_radii=distance_earth_radii,
-        angular_diameter_arcmin=angular_diameter,
-        is_waxing=is_waxing
-    )
-
-def get_sun_info(t, observer, latitude: float, longitude: float, elevation: float = 0) -> SunInfo:
-    if not EPHEMERIS_LOADED:
-        raise HTTPException(500, "Ephemeris not loaded")
-    
-    astrometric = observer.at(t).observe(sun)
-    apparent = astrometric.apparent()
-    ra, dec, distance = apparent.radec()
-    alt, az, _ = apparent.altaz()
-    
-    position = CelestialPosition(
-        name="Nap",
-        name_en="Sun",
-        ra=ra.hours,
-        dec=dec.degrees,
-        ra_degrees=ra.hours * 15,
-        ra_formatted=format_ra(ra.hours),
-        dec_formatted=format_dec(dec.degrees),
-        alt=alt.degrees,
-        az=az.degrees,
-        distance_au=distance.au,
-        distance_km=distance.km,
-        is_visible=alt.degrees > 0,
-    )
-    
-    dt = t.utc_datetime()
-    t0 = ts.utc(dt.year, dt.month, dt.day, 0, 0, 0)
-    t1 = ts.utc(dt.year, dt.month, dt.day, 23, 59, 59)
-    
-    result = SunInfo(position=position)
-    
-    try:
-        topos = Topos(latitude_degrees=latitude, longitude_degrees=longitude, elevation_m=elevation)
-        f = almanac.sunrise_sunset(eph, topos)
-        times, events = almanac.find_discrete(t0, t1, f)
-        
-        for time, event in zip(times, events):
-            time_dt = time.utc_datetime()
-            hour = time_dt.hour + time_dt.minute/60 + time_dt.second/3600
-            time_str = format_time_short(hour)
-            
-            if event:
-                result.sunrise = time_str
-            else:
-                result.sunset = time_str
-        
-        if result.sunrise and result.sunset:
-            try:
-                sr_parts = result.sunrise.split(':')
-                ss_parts = result.sunset.split(':')
-                sr_hours = int(sr_parts[0]) + int(sr_parts[1])/60
-                ss_hours = int(ss_parts[0]) + int(ss_parts[1])/60
-                day_hours = ss_hours - sr_hours
-                if day_hours > 0:
-                    result.day_length = f"{int(day_hours)}h {int((day_hours % 1) * 60)}m"
-            except:
-                pass
-    except Exception as e:
-        if alt.degrees > 0:
-            result.day_length = "24h 0m (sarki nappal)"
-        else:
-            result.day_length = "0h 0m (sarki éjszaka)"
-    
-    return result
-
 @app.get("/", tags=["Info"])
 async def root():
 
@@ -459,11 +281,9 @@ async def root():
         "endpoints": {
             "/planets": "Összes bolygó pozíciója",
             "/planet/{name}": "Egy bolygó részletes adatai",
-            "/moon": "Hold pozíció és fázis",
-            "/sun": "Nap pozíció és napkelte/nyugta",
             "/sidereal-time": "Csillagidő számítás",
             "/api/db/stars": "Csillagok adatbázisból",
-                        "/api/db/galaxies": "Galaxisok",
+            "/api/db/galaxies": "Galaxisok",
             "/api/db/dso": "Ködök és halmazok",
             "/api/db/search": "Keresés",
             "/api/db/stats": "Adatbázis statisztika"
@@ -520,44 +340,6 @@ async def get_planet(
         observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude, elevation_m=elevation)
     
     return get_planet_position(planet_name, t, observer)
-
-@app.get("/moon", response_model=MoonInfo, tags=["Hold"])
-async def get_moon_endpoint(
-    datetime_utc: Optional[str] = Query(None),
-    latitude: Optional[float] = Query(None, ge=-90, le=90),
-    longitude: Optional[float] = Query(None, ge=-180, le=180),
-    elevation: float = Query(0)
-):
-
-    if not EPHEMERIS_LOADED:
-        raise HTTPException(500, "Ephemeris file not loaded")
-    
-    dt = parse_datetime(datetime_utc)
-    t = datetime_to_skyfield(dt)
-    
-    observer = None
-    if latitude is not None and longitude is not None:
-        observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude, elevation_m=elevation)
-    
-    return get_moon_info(t, observer)
-
-@app.get("/sun", response_model=SunInfo, tags=["Nap"])
-async def get_sun_endpoint(
-    datetime_utc: Optional[str] = Query(None),
-    latitude: float = Query(..., ge=-90, le=90),
-    longitude: float = Query(..., ge=-180, le=180),
-    elevation: float = Query(0)
-):
-
-    if not EPHEMERIS_LOADED:
-        raise HTTPException(500, "Ephemeris file not loaded")
-    
-    dt = parse_datetime(datetime_utc)
-    t = datetime_to_skyfield(dt)
-    
-    observer = earth + Topos(latitude_degrees=latitude, longitude_degrees=longitude, elevation_m=elevation)
-    
-    return get_sun_info(t, observer, latitude, longitude, elevation)
 
 @app.get("/sidereal-time", response_model=SiderealTime, tags=["Csillagidő"])
 async def get_sidereal_time(

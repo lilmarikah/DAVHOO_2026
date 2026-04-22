@@ -103,8 +103,7 @@ const nebulaFragment = `
     
     float density = 0.0;
     vec3 color = vec3(0.0);
-    
-    // EMISSION
+
     if(uType == 0) {
       density = (n1 * 0.5 + n2 * 0.5) * circle;
       density -= fbm(q * 2.5) * 0.3;
@@ -114,7 +113,7 @@ const nebulaFragment = `
       color = mix(color, vec3(0.1, 0.6, 1.0), smoothstep(0.5, 0.85, n2) * 0.3);
       color += uColor2 * v * 1.5 * circle;
     }
-    // PLANETARY
+
     else if(uType == 1) {
       float ring = smoothstep(0.15, 0.35, dist) * smoothstep(0.9, 0.6, dist);
       density = (n1 * 0.4 + n2 * 0.6) * ring * circle;
@@ -126,7 +125,7 @@ const nebulaFragment = `
       color += vec3(1.0) * star * 3.0;
       density = max(density, star * 0.8);
     }
-    // DARK
+
     else if(uType == 2) {
       density = (n1 * 0.6 + n2 * 0.4) * circle;
       density -= fbm(q * 2.0) * 0.25;
@@ -135,7 +134,7 @@ const nebulaFragment = `
       color = mix(color, uColor1, smoothstep(0.4, 0.0, dist));
       color *= 0.4;
     }
-    // REFLECTION
+
     else if(uType == 3) {
       density = (n1 * 0.3 + n2 * 0.7) * circle * 0.8;
       density -= fbm(q * 3.0) * 0.2;
@@ -147,7 +146,7 @@ const nebulaFragment = `
       color += vec3(0.8, 0.9, 1.0) * star * 2.5;
       density = max(density, star * 0.7);
     }
-    // SUPERNOVA REMNANT
+
     else if(uType == 4) {
       float filaments = ridge(q * 2.5 + vec3(uSeed * 3.0));
       float shell = smoothstep(0.1, 0.3, dist) * smoothstep(0.95, 0.6, dist);

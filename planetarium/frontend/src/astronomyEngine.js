@@ -22,27 +22,10 @@ export const dateToJulianDate = (date) => {
   return date.getTime() / 86400000 + 2440587.5;
 };
 
-// ============================================
-// BOLYGÓ POZÍCIÓ SZÁMÍTÁS (VSOP87)
-// ============================================
-/**
- * Pontos bolygópozíció számítás VSOP87 alapján
- * 
- * Stellarium megfelelője: 
- *   GetVsop87Coor(jde, body, xyz) → ICRS transzformáció → RA/Dec
- * 
- * @param {Object} planet - A celestialData.js bolygó objektuma (id, name, stb.)
- * @param {Date} date - Az aktuális szimulációs dátum
- * @returns {{ ra: number, dec: number, distance: number, elongation: number }}
- *   ra: rektaszcenzió órákban (0-24)
- *   dec: deklináció fokban (-90 - +90)
- *   distance: távolság AU-ban
- *   elongation: Naptól mért szögtávolság fokban
- */
 export const calculatePlanetPositionPrecise = (planet, date) => {
   const body = PLANET_BODY_MAP[planet.id];
   if (!body) {
-    // Ismeretlen bolygó → fallback a régi módszerre
+
     console.warn(`Ismeretlen bolygó ID: ${planet.id}`);
     return null;
   }
@@ -55,25 +38,13 @@ export const calculatePlanetPositionPrecise = (planet, date) => {
   const elongation = Astronomy.AngleFromSun(body, time);
   
   return {
-    ra: equ.ra,           // órákban (0-24)
-    dec: equ.dec,          // fokban (-90...+90)
-    distance: equ.dist,    // AU
-    elongation: elongation // fok
+    ra: equ.ra,
+    dec: equ.dec,
+    distance: equ.dist,
+    elongation: elongation
   };
 };
 
-// ============================================
-// NAP POZÍCIÓ SZÁMÍTÁS
-// ============================================
-/**
- * Pontos nappozíció számítás
- * 
- * Stellarium: StelCore::getObserverHeliocentricEclipticPos() + transzformáció
- * Az astronomy-engine SunPosition() függvénye VSOP87-et használ.
- * 
- * @param {Date} date
- * @returns {{ ra: number, dec: number, eclipticLongitude: number }}
- */
 export const calculateSunPositionPrecise = (date) => {
   const time = dateToAstroTime(date);
   
@@ -90,22 +61,6 @@ export const calculateSunPositionPrecise = (date) => {
   };
 };
 
-// ============================================
-// HOLD POZÍCIÓ ÉS FÁZIS SZÁMÍTÁS
-// ============================================
-/**
- * Pontos holdpozíció és fázis számítás
- * 
- * Stellarium: ELP2000-82B ephemeris → GetElp82bCoor()
- * astronomy-engine: Saját ELP-alapú hold-modell
- * 
- * A fázis számítás a Stellariumban:
- *   phase_angle = acos(dot(sun_dir, moon_dir)) típusú geometria
- *   illumination = (1 + cos(phase_angle)) / 2
- * 
- * @param {Date} date
- * @returns {{ ra, dec, phase, illumination, phaseName, phaseAngle, distance_km }}
- */
 export const calculateMoonPositionPrecise = (date) => {
   const time = dateToAstroTime(date);
   
@@ -141,22 +96,6 @@ export const getMoonPhaseName = (phase) => {
   return 'Fogyó sarló';
 };
 
-// ============================================
-// HELYI SZIDERIKUS IDŐ (LST)
-// ============================================
-/**
- * Pontos helyi sziderikus idő számítás
- * 
- * Stellarium: StelCore::getLocalSiderealTime()
- *   = planet->getSiderealTime(JD_UT, JDE) + longitude
- * 
- * Az astronomy-engine IAU 2000 ERA-t (Earth Rotation Angle) használ,
- * ami a modern standard (a Stellarium is támogatja ezt).
- * 
- * @param {Date} date
- * @param {number} longitude - Megfigyelő hosszúsága fokban (kelet pozitív)
- * @returns {number} LST órákban (0-24)
- */
 export const calculateLSTPrecise = (date, longitude) => {
   const time = dateToAstroTime(date);
   
@@ -168,38 +107,12 @@ export const calculateLSTPrecise = (date, longitude) => {
   return lst;
 };
 
-// ============================================
-// JULIAN DATE SZÁMÍTÁS
-// ============================================
-/**
- * GMST számítás (Greenwich Mean Sidereal Time)
- * Stellarium: StelUtils::getGMST() → planet->getSiderealTime()
- * 
- * @param {number} jd - Julian Date
- * @returns {number} GMST órákban
- */
 export const julianDateToGMST = (jd) => {
   const date = jdToDate(jd);
   const time = dateToAstroTime(date);
   return Astronomy.SiderealTime(time);
 };
 
-// ============================================
-// HORIZONTÁLIS KOORDINÁTÁK (ALT-AZ)
-// ============================================
-/**
- * Horizontális koordináták (azimut, magasság)
- * 
- * Stellarium: StelCore::j2000ToAltAz() transzformáció
- * Ez opcionális, ha később szeretnéd használni.
- * 
- * @param {number} ra - óra
- * @param {number} dec - fok
- * @param {Date} date
- * @param {number} latitude - fok
- * @param {number} longitude - fok
- * @returns {{ altitude: number, azimuth: number }}
- */
 export const raDecToAltAz = (ra, dec, date, latitude, longitude) => {
   const time = dateToAstroTime(date);
   const observer = new Astronomy.Observer(latitude, longitude, 0);
@@ -212,19 +125,6 @@ export const raDecToAltAz = (ra, dec, date, latitude, longitude) => {
   };
 };
 
-// ============================================
-// BOLYGÓK FELKELÉSE/LENYUGVÁSA
-// ============================================
-/**
- * Égitest felkelés/lenyugvás ideje
- * Stellarium: StelCore::getObjectRiseTransitSet()
- * 
- * @param {string} planetId - Bolygó ID (mercury, venus, stb.)
- * @param {Date} date
- * @param {number} latitude
- * @param {number} longitude
- * @returns {{ rise: Date|null, set: Date|null }}
- */
 export const getRiseSet = (planetId, date, latitude, longitude) => {
   const body = PLANET_BODY_MAP[planetId] || Astronomy.Body.Sun;
   const observer = new Astronomy.Observer(latitude, longitude, 0);
@@ -243,34 +143,12 @@ export const getRiseSet = (planetId, date, latitude, longitude) => {
   }
 };
 
-// ============================================
-// DELTA-T SZÁMÍTÁS
-// ============================================
-/**
- * ΔT (TT - UT1) számítás
- * Stellarium: StelCore::computeDeltaT() → Espenak-Meeus algoritmus
- * astronomy-engine: DeltaT_EspenakMeeus (ugyanaz!)
- * 
- * @param {Date} date
- * @returns {number} ΔT másodpercben
- */
 export const getDeltaT = (date) => {
   const jd = dateToJulianDate(date);
   const ut = jd - 2451545.0;
   return Astronomy.DeltaT_EspenakMeeus(ut / 365.25 + 2000.0);
 };
 
-// ============================================
-// ÖSSZES BOLYGÓ POZÍCIÓJA EGYSZERRE
-// ============================================
-/**
- * Minden bolygó pozíciójának egyszerre számítása
- * Ez hatékonyabb, mint egyenként hívni calculatePlanetPositionPrecise-t
- * 
- * @param {Array} planets - A celestialData.js planets tömbje
- * @param {Date} date
- * @returns {Map} planetId → { ra, dec, distance, elongation }
- */
 export const calculateAllPlanetPositions = (planets, date) => {
   const positions = new Map();
   

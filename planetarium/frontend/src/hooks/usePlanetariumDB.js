@@ -200,60 +200,6 @@ export function useConstellations() {
 }
 
 
-export function useMoon(date = null) {
-  const [moon, setMoon] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  useEffect(() => {
-    async function loadMoon() {
-      try {
-        setLoading(true);
-        const params = date ? `?date=${date.toISOString()}` : '';
-        const data = await fetchAPI(`/api/moon${params}`);
-        setMoon(data);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    loadMoon();
-  }, [date]);
-  
-  return { moon, loading, error };
-}
-
-
-export function useSun(date = null) {
-  const [sun, setSun] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  useEffect(() => {
-    async function loadSun() {
-      try {
-        setLoading(true);
-        const params = date ? `?date=${date.toISOString()}` : '';
-        const data = await fetchAPI(`/api/sun${params}`);
-        setSun(data);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    loadSun();
-  }, [date]);
-  
-  return { sun, loading, error };
-}
-
-
 export function useSearch(query) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -278,7 +224,6 @@ export function useSearch(query) {
       }
     }
     
-    // Debounce
     const timer = setTimeout(search, 300);
     return () => clearTimeout(timer);
   }, [query]);
@@ -340,8 +285,6 @@ export default {
   useGalaxies,
   useDeepSkyObjects,
   useConstellations,
-  useMoon,
-  useSun,
   useSearch,
   useDatabaseStats,
   useCelestialData

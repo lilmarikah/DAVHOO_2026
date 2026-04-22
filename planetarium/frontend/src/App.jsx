@@ -1101,7 +1101,6 @@ function SkyBackground() {
   );
 }
 
-// ── Magellanic Cloud: volumetric ray-march shader ──────────────────────────
 const mcVertex = `
   uniform vec3 uCameraLocalPos;
   varying vec3 vOrigin;
@@ -1126,7 +1125,6 @@ const mcFragment = `
   uniform vec3  uColor3;
   uniform float uAlphaScale;
 
-  // --- Cheap hash-based 3-D noise ---
   float hash3(vec3 p) {
     p = fract(p * 0.3183099 + 0.1);
     p *= 17.0;
@@ -1147,7 +1145,6 @@ const mcFragment = `
     return v;
   }
 
-  // --- Ray vs axis-aligned unit box (coords in [-0.5, 0.5]) ---
   vec2 hitBox(vec3 orig, vec3 dir) {
     vec3 inv = 1.0 / dir;
     vec3 t0  = (-0.5 - orig) * inv;
@@ -1157,14 +1154,12 @@ const mcFragment = `
                 min(min(tma.x,tma.y),tma.z));
   }
 
-  // --- Density at local-box point p in [-0.5,0.5] ---
   float getDensity(vec3 p) {
-    // Soft spherical envelope (box scale already handles ellipse shape)
-    float r = length(p) * 2.0;          // r==1 at corners → use 1.0 as edge
+
+    float r = length(p) * 2.0;         
     float envelope = smoothstep(1.0, 0.15, r);
     if (envelope <= 0.0) return 0.0;
 
-    // Two-layer FBM — slow drift only, no fast animation
     vec3 seed3 = vec3(uSeed*0.37, uSeed*0.19, uSeed*0.53);
     vec3 q  = p * 5.5 + seed3 + vec3(uTime*0.012, uTime*0.008, uTime*0.005);
     vec3 q2 = p * 3.2 + seed3 * 1.7 + vec3(uTime*0.006, uTime*-0.004, 0.0);
@@ -1185,7 +1180,6 @@ const mcFragment = `
     const int STEPS = 28;
     float stepSz  = rayLen / float(STEPS);
 
-    // Per-pixel jitter to break banding
     float jitter = fract(sin(dot(gl_FragCoord.xy, vec2(127.1, 311.7))) * 43758.545);
     vec3 p = vOrigin + (bounds.x + jitter * stepSz) * rd;
 
@@ -1197,13 +1191,11 @@ const mcFragment = `
       if (dens > 0.005) {
         float r = length(p) * 2.0;
 
-        // Colour: warm grey core → cool grey mid → almost-black outer
         vec3 col = mix(uColor1, uColor2, smoothstep(0.0, 0.45, r));
         col       = mix(col,    uColor3, smoothstep(0.45, 0.9, r));
-        // Very subtle warmer patch near centre (hint of stellar core)
+
         col += vec3(0.04, 0.02, 0.0) * smoothstep(0.4, 0.0, r);
 
-        // Beer-Lambert absorption — kept deliberately low (translucent cloud)
         float absorb = exp(-dens * stepSz * 8.0);
         accColor += transmit * col * dens * stepSz * 4.5;
         transmit *= absorb;
@@ -1218,22 +1210,21 @@ const mcFragment = `
   }
 `;
 
-// --- Config per cloud ---
 const MC_CONFIGS = {
   LMC: {
-    // Muted warm-grey / dark blue-grey, Stellarium-like
-    color1: new THREE.Color('#3e3830'),   // warm dark grey core
-    color2: new THREE.Color('#22263a'),   // cool dark blue-grey mid
-    color3: new THREE.Color('#07080f'),   // near-black outer
+
+    color1: new THREE.Color('#3e3830'),  
+    color2: new THREE.Color('#22263a'),  
+    color3: new THREE.Color('#07080f'),  
     scaleX: 1.18, scaleY: 0.58, scaleZ: 0.72,
     alphaScale: 0.62,
     glowColor: '#88998a',
     seed: 1.31,
   },
   SMC: {
-    color1: new THREE.Color('#2e333e'),   // cool grey core
-    color2: new THREE.Color('#1a2030'),   // dark blue mid
-    color3: new THREE.Color('#05060d'),   // near-black outer
+    color1: new THREE.Color('#2e333e'),  
+    color2: new THREE.Color('#1a2030'),  
+    color3: new THREE.Color('#05060d'),  
     scaleX: 1.08, scaleY: 0.82, scaleZ: 0.75,
     alphaScale: 0.55,
     glowColor: '#667788',
@@ -1264,9 +1255,8 @@ function MagellanicCloud({ galaxy, showLabels, onClick, isSelected, fov = 60 }) 
     transparent: true,
     depthWrite:  false,
     blending:    THREE.NormalBlending,
-  }), [galaxy.id]); // eslint-disable-line
+  }), [galaxy.id]);
 
-  // Temp objects — no allocations inside useFrame
   const _mat = useRef(new THREE.Matrix4());
   const _cam = useRef(new THREE.Vector3());
 
@@ -1315,7 +1305,6 @@ function MagellanicCloud({ galaxy, showLabels, onClick, isSelected, fov = 60 }) 
     </group>
   );
 }
-
 
 function CigarGalaxy({ galaxy, showLabels, onClick, isSelected, fov = 60 }) {
   const billboardRef = useRef();
