@@ -54,7 +54,7 @@ def import_hyg_catalog(csv_path, mag_limit=7.0):
         print("1. Nyisd meg ezt a linket a böngészőben:")
         print("   https://github.com/astronexus/HYG-Database")
         print()
-        print("2. Kattints a 'hyg/v4/hyg_v40.csv' fájlra")
+        print("2. Kattints a 'hygdata_v41.csv' fájlra")
         print()
         print("3. Kattints a 'Download raw file' gombra")
         print()
@@ -219,7 +219,7 @@ def import_hyg_catalog(csv_path, mag_limit=7.0):
     print(f"   Adatbázis: {DATABASE_PATH}")
 
 if __name__ == '__main__':
-    csv_path = os.path.join(os.path.dirname(__file__), 'hyg_v40.csv')
+    csv_path = os.path.join(os.path.dirname(__file__), 'hygdata_v41.csv')
     
     if len(sys.argv) > 1:
         csv_path = sys.argv[1]

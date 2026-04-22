@@ -2,11 +2,11 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil import parser as date_parser
 import os
 
-from skyfield.api import load, Topos, Star
+from skyfield.api import load, Topos
 
 app = FastAPI(
     title="Planetárium 3D API",
@@ -36,6 +36,8 @@ Az SQLite adatbázis a következő adatokat tartalmazza:
 - **28 köd** – emissziós, planetáris, reflexiós és egyéb típusok
 - **21 exobolygó** – NASA Exoplanet Archive alapján
 - **9 Naprendszer-objektum** – Nap, Hold és a 7 bolygó textúra- és pályaadatokkal
+
+> **Megjegyzés:** A Hold fázisának shader-alapú megjelenítése jelenleg nem valósult meg; a fázis és a megvilágítottság mértéke a Hold infó paneljén érhető el numerikusan.
 
 Elérési prefix: `/api/db`
 
@@ -431,6 +433,7 @@ if NASA_API_AVAILABLE:
         except Exception as e:
             print(f"⚠️ EPIC endpoint error: {e}")
             return []
+
 
 if __name__ == "__main__":
     import uvicorn
