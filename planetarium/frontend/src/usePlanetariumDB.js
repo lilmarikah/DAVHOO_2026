@@ -22,7 +22,7 @@ const EMPTY_DATA = {
   constellationData: [],
   sunData: { id: 'sun', name: 'Nap', color: '#FFD700', glowColor: '#FFA500', size: 0.08, description: 'A Naprendszer központi csillaga.' },
   planets: [],
-  moonData: { id: 'moon', name: 'Hold', color: '#C0C0C0', glowColor: '#888888', size: 0.04, description: 'A Föld természetes műholdja.' },
+  moonData: { id: 'moon', name: 'Hold', color: '#C0C0C0', glowColor: '#888888', size: 0.04, description: 'A Föld természetes holdja.' },
   galaxies: [], nebulaeData: [], exoplanetsData: [], deepSkyObjects: [],
 };
 
