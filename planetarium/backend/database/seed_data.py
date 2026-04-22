@@ -1,16 +1,8 @@
 import sqlite3
 import json
 import os
-import shutil
 
 DATABASE_PATH = os.path.join(os.path.dirname(__file__), 'planetarium.db')
-SOURCE_DB = '/mnt/user-data/uploads/planetarium.db' if os.path.exists('/mnt/user-data/uploads/planetarium.db') else None
-
-def backup_and_copy():
-
-    if SOURCE_DB and not os.path.exists(DATABASE_PATH):
-        shutil.copy2(SOURCE_DB, DATABASE_PATH)
-        print(f"✅ Adatbázis másolva: {SOURCE_DB} -> {DATABASE_PATH}")
 
 def create_new_tables():
 
@@ -400,7 +392,6 @@ if __name__ == '__main__':
     print("🌟 Planetárium Adatbázis - Teljes Seed")
     print("=" * 50)
 
-    backup_and_copy()
     create_new_tables()
     seed_galaxies()
     seed_nebulae()
