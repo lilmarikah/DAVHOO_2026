@@ -10,6 +10,7 @@ Egy modern, böngészőalapú 3D planetárium alkalmazás, amely React Three Fib
 ## 📋 Tartalomjegyzék
 
 - [Funkciók](#-funkciók)
+- [Ismert korlátozások](#-ismert-korlátozások)
 - [Technológiai stack](#-technológiai-stack)
 - [Mappastruktúra](#-mappastruktúra)
 - [Telepítés és futtatás](#-telepítés-és-futtatás)
@@ -27,13 +28,19 @@ Egy modern, böngészőalapú 3D planetárium alkalmazás, amely React Three Fib
 - **3D égbolt szimuláció** – ~15 598 csillag a Hipparcos-katalógusból, valós fényességgel és spektrálszínekkel
 - **88 IAU csillagkép** – vonalrajzokkal és magyar/latin nevekkel
 - **Bolygók (VSOP87)** – az `astronomy-engine` csomag segítségével Stellarium-szintű pontossággal kiszámított bolygóállások
-- **Hold** – fázis és megvilágítás valós idejű számítása (ELP-alapú modell)
+- **Hold** – fázis és megvilágítás valós idejű számítása (ELP-alapú modell); a fázis és a megvilágítottság mértéke a Hold infó paneljén jelenik meg
 - **Galaxisok és ködök** – GLSL shader-alapú 3D megjelenítés (M31, M42, M57 stb.)
 - **Exobolygók** – 21 felfedezett exobolygó interaktív nézettel
 - **NASA Dashboard** – APOD, Közel Föld aszteroidák (NeoWs), NASA Képgaléria és EPIC Föld-fotók élő lekérése
 - **Aladin Lite v3** – mélyég-objektumok valódi survey képei (DSS, 2MASS, AllWISE stb.)
 - **Időszimuláció** – visszatekerhető/gyorsítható idő (1×–2000×), Julian Date-alapú rendszerrel
 - **Logaritmikus FOV-vezérlés** – 0,005°–120° között
+
+---
+
+## ⚠️ Ismert korlátozások
+
+- **Hold-fázis megjelenítés**: A Hold fázisának shader-alapú, vizuális megjelenítése jelenleg nem került megvalósításra. A fázisra és a megvilágítottság mértékére vonatkozó adatok a Hold infó paneljén érhetők el numerikusan. A shader-alapú vizuális megjelenítés a jövőbeli fejlesztések között szerepel.
 
 ---
 
@@ -103,10 +110,9 @@ planetarium/
     │   │   └── usePlanetariumDB.js # Lekéri az adatbázisból az összes csillagászati adatot
     │   └── utils/
     │       ├── astronomy.js        # Időszámítás és égi koordináták kiszámítása
-    │       ├── astronomyEngine.js  # A csillagászati számítógépkönyvtár használata
     │       ├── angularSize.js      # Meghatározza, mekkora legyen egy objektum a képernyőn
     │       ├── coordinates.js      # Égi koordinátákat (RA/Dec) alakít át 3D-s pozícióvá
-    │       └── constants.js        # Állandó értékek egy helyen (pl. textúrák elérési útjai)
+    │       └── constants.js        # Állandó értékek egy helyen (pl. gömb sugara, FOV határok)
     ├── textures/                   # Képfájlok a bolygók felszínéhez és az égbolt hátteréhez
     │   ├── Nap.jpg, Hold.jpg, Mars.jpg, Jupiter.jpg ...
     │   └── Hatter.jpg
@@ -348,7 +354,7 @@ pytest test_database.py -v
 | `Stars` | `App.jsx` | Hipparcos csillagok pont-geometriaként |
 | `ConstellationLines` | `App.jsx` | Csillagkép-vonalak HIP ID alapján |
 | `Planet` | `App.jsx` | Textúrázott bolygógömbök, VSOP87 pozícióval |
-| `Moon` | `App.jsx` | Hold fázis-shader, valós pozícióval |
+| `Moon` | `App.jsx` | Hold textúrával, valós pozícióval; fázis és megvilágítás az infó panelen |
 | `Sun` | `App.jsx` | Nap glow-effekttel |
 | `Galaxy3D` | `App.jsx` | GLSL shader-alapú galaxis-megjelenítés |
 | `Nebula3D` | `NebulaComponents.jsx` | Volumetrikus köd shader (5 típus) |
